@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>计算阶乘之和</title>
+    <style>
+        .container{
+            width: 400px;
+            min-height: 400px;
+            margin-left: 20px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #eee;
+        }
+        .container .label{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50%;
+            height: 40px;
+            font-size: 14px;
+            border: 1px solid #eee;
+            background: #ccc;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            margin-left: 25%;
+            cursor: pointer;
+        }
+        .container .input{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 40px;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .container .input input{
+            width: 60%;
+            height: 32px;
+            padding-left: 8px;
+        }
+        .container span#submit{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 80%;
+            height: 40px;
+            font-size: 14px;
+            margin-left: 10%;
+            background: #ccc;
+            border: 1px solid #eee;
+            cursor: pointer;
+        }
+        .container span#reset{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 80%;
+            height: 40px;
+            font-size: 14px;
+            margin-left: 10%;
+            margin-top: 10px;
+            background: #ccc;
+            border: 1px solid #eee;
+            cursor: pointer;
+        }
+        .container .result{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 80%;
+            height: 40px;
+            font-size: 14px;
+            margin-left: 10%;
+        }
+        .container form .history{
+            display: inline-block;
+            width: 100%;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="label">添加一个数字</div>
+    <form id="form">
+        <div class="input">
+            <input class="n" type="text" placeholder="请输入数字" />
+        </div>
+        <span id="submit">计算<span class="num-count"></span>个数的阶乘之和</span>
+        <span id="reset">重置</span>
+        <div class="result">计算结果:<span>0</span></div>
+        <a class="history" href="./history.html">查看计算历史</a>
+    </form>
+</div>
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/layer/3.1.1/layer.js"></script>
+<script>
+    $(function() {
+        $("#submit").click(function() {
+            var arr = [];
+            $(".n").each(function() {
+                arr.push($(this).val())
+            })
+            var obj = {
+                n: arr,
+                account: localStorage.getItem('account'),
+                numCount: arr.length,
+                numDetail: arr.join(','),
+            }
+            var params = {
+                data: JSON.stringify(obj)
+            }
+            var loadingFlag;
+            $.ajax({
+                url: "./factorial.php",
+                method: 'post',
+                data: params,
+                beforeSend: function() {
+                    loadingFlag= layer.msg('计算中，请稍候……', {time:60000 })
+                },
+                success: function(data) {
+                    layer.close(loadingFlag)
+                    console.log(data)
+                    let res = JSON.parse(data)
+                    console.log(res)
+                    if(res.code == 0) {
+                        layer.msg(res.msg)
+                        $('.result span').text(res.data.result)
+                    } else {
+                        layer.msg(res.msg)
+                    }
+                }
+            })
+        })
+
+        numCount()
+        $(".label").click(function() {
+            var str = `<div class="input">
+                                <input class="n" type="text" placeholder="请输入数字" />
+                            </div>`
+            $('#form').prepend(str)
+            numCount()
+        })
+
+        $("#reset").click(function() {
+            $('.n').each(function() {
+                $(this).val('')
+                $('.result span').text(0)
+            })
+        })
+
+        function numCount() {
+            $(".num-count").text( $(".n").length)
+        }
+
+    })
+</script>
+</body>
+</html>
